@@ -6,6 +6,10 @@ import Header from "./components/Header/Header";
 import config from "./config/config.json";
 import routes from "./routes/routes";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import "primereact/resources/themes/lara-light-blue/theme.css";
+
+//core
+import "primereact/resources/primereact.min.css";
 
 function App() {
   document.title = config.appTitle;
@@ -34,7 +38,7 @@ function App() {
             </Routes>
           </div>
         </div>
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="bottom-center" />
       </AuthContextProvider>
     </QueryClientProvider>
   );

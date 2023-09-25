@@ -1,5 +1,5 @@
 {
-  "apiBaseUrl": "https://localhost:7096/api",
+  "apiBaseUrl": "https://localhost:7176/api",
   "appTitle": "PowerSupplies",
   "appHeader": "PowerSupplies",
   "developerName": "J.M Lugo, Deniel Villarreal"
