@@ -12,7 +12,12 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
+  price: Price | null;
+}
+
+interface Price {
+  isnull: boolean;
+  value: number;
 }
 
 interface OrderDetailsContentProps {
@@ -52,7 +57,7 @@ const OrderDetailsContent: React.FC<OrderDetailsContentProps> = ({
               <br />
               <span>Descripcion: {orderDetail.product.description}</span>
               <br />
-              <span>Precio: {orderDetail.product.price}</span>
+              <span>Precio: {orderDetail.product.price?.value}</span>
               <br />
             </div>
           )}

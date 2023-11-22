@@ -1,17 +1,28 @@
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { createAuthorizedRequest } from "../../axios.js";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { Link } from "react-router-dom";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import OrderDetailsContent from "../../components/OrderDetailsContent/OrderDetailsContent.js";
+import { toast } from "sonner";
 
 interface Order {
   id: number;
   orderDate: string;
   total: number;
+  orderStatus: OrderStatus | null;
+  orderStatusId: number;
+}
+
+interface OrderStatus {
+  id: number;
+  name: string;
+  nextStatusId: number;
+  action: string;
+  actionGifLink: string;
 }
 
 interface OrderDetails {
@@ -26,7 +37,19 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
+  price: Price | null;
+}
+
+interface Price {
+  isnull: boolean;
+  value: number;
+}
+
+interface ChangeOrderStatusResponse {
+  id: number;
+  message: string;
+  success: boolean;
+  errors: string[];
 }
 
 const Order = () => {
@@ -39,8 +62,11 @@ const Order = () => {
       quantity: 0,
     },
   ];
+  const queryClient = useQueryClient();
   const makeRequest = createAuthorizedRequest();
   const [showDetails, setshowDetails] = useState(false);
+  const [showOrderAnimation, setshowOrderAnimation] = useState(false);
+  const [animation, setAnimation] = useState("");
   const [selectedOrder, setSelectedOrder] =
     useState<OrderDetails[]>(initialOrderDetails);
 
@@ -48,14 +74,56 @@ const Order = () => {
     isLoading: loadingOrders,
     error: errorOrders,
     data: Orders,
-  } = useQuery(["materials"], () =>
+  } = useQuery(["orders"], () =>
     makeRequest.get("/Orders").then((res) => {
       return res.data;
     })
   );
 
-  const renderViewDetails = (order: Order) => {
-    return <Button label="Ver Detalles" onClick={() => buttonEvent(order)} />;
+  const renderStatusOrder = (order: Order) => {
+    return <span>{order.orderStatus?.name}</span>;
+  };
+
+  const handleOrderStatusChange = async (order: Order) => {
+    const requestBody = {
+      orderId: order.id,
+      orderStatusId: order.orderStatus?.nextStatusId,
+    };
+
+    try {
+      const response: ChangeOrderStatusResponse = await makeRequest
+        .post("Orders/ChangeStatus", requestBody)
+        .then((res) => res.data);
+      console.log(response);
+      if (response.success === true) {
+        setAnimation(order.orderStatus?.actionGifLink!);
+        setshowOrderAnimation(true);
+        setTimeout(() => {
+          setshowOrderAnimation(false);
+          queryClient.invalidateQueries("orders");
+          toast.success("Status de Orden Cambiado");
+        }, 12000);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error al cambiar el status de la orden");
+    }
+  };
+
+  const renderAcciones = (order: Order) => {
+    const { action } = order.orderStatus!;
+    return (
+      <div className="flex items-center justify-center space-x-5">
+        {action !== null && (
+          <Button
+            label={action}
+            className="bg-green-300 text-black border-none"
+            onClick={() => handleOrderStatusChange(order)}
+          />
+        )}
+        <Button label="Ver Detalles" onClick={() => buttonEvent(order)} />
+      </div>
+    );
   };
 
   async function buttonEvent(order: Order) {
@@ -77,7 +145,7 @@ const Order = () => {
             <DataTable
               value={Orders}
               tableStyle={{
-                minWidth: "50rem",
+                minWidth: "70rem",
                 minHeight: "30rem",
               }}
               paginator
@@ -86,7 +154,16 @@ const Order = () => {
               <Column field="id" header="ID"></Column>
               <Column field="orderDate" header="Fecha de Orden"></Column>
               <Column field="total" header="Total $"></Column>
-              <Column header="Ver detalles" body={renderViewDetails}></Column>
+              <Column
+                field="status"
+                header="Status"
+                body={renderStatusOrder}
+              ></Column>
+              <Column
+                header="Acciones"
+                body={renderAcciones}
+                alignHeader={"center"}
+              ></Column>
             </DataTable>
           </div>
         )}
@@ -107,6 +184,20 @@ const Order = () => {
           onHide={() => setshowDetails(false)}
         >
           <OrderDetailsContent orderDetails={selectedOrder} />
+        </Dialog>
+      )}
+      {showOrderAnimation && (
+        <Dialog
+          header="Cambiando Status.."
+          headerStyle={{ textAlign: "center" }}
+          visible={showOrderAnimation}
+          style={{ width: "40vw" }}
+          onHide={() => setshowOrderAnimation(false)}
+          closable={false}
+        >
+          <div className="w-full h-full flex items-center justify-center">
+            <img src={animation} />
+          </div>
         </Dialog>
       )}
     </>

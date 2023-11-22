@@ -49,7 +49,6 @@ const Order = () => {
 
   async function makeOrder() {
     const requestBody = { products: orderProducts };
-    console.log();
     const makeMaterialResponse = async () => {
       const respuesta = await makeRequest
         .post("/Orders", requestBody)
@@ -86,7 +85,7 @@ const Order = () => {
     } else toast.error("Invalid quantity value!");
   };
 
-  const renderProductORderCard = (product: OrderProduct, index: number) => {
+  const renderProductOrderCard = (product: OrderProduct, index: number) => {
     const productDetails = Products.find((p: Product) => {
       return p.id === product.productId;
     });
@@ -167,7 +166,7 @@ const Order = () => {
                 <>
                   <h3 className="text-lg mb-2">ORDEN ACTUAL</h3>
                   {orderProducts.map((product, index) =>
-                    renderProductORderCard(product, index)
+                    renderProductOrderCard(product, index)
                   )}
                 </>
               )}
