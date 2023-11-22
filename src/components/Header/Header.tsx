@@ -1,18 +1,18 @@
 import routes from "../.././routes/routes";
 import HeaderLink from "../../routes/HeaderLink";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Header = () => {
   return (
     <header className="fixed top-0 left-0 w-full">
       <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          <a href="#home" className="flex items-center">
+          <Link to={"/home"} className="flex items-center">
             <img src="ps.svg" className="mr-3 h-9" alt="PowerSupplies Logo" />
             <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
               Power Supplies
             </span>
-          </a>
+          </Link>
           <div className="flex items-center order-2">
             <NavLink
               to={"/login"}
